@@ -64,11 +64,11 @@ EAC approach of the paper to generate high accurate and human-understandable pos
 
 ### Architectural Diagram
 
-![arch](./image/arch.png)
+![arch](./image/arch.jpg)
 
 ### Domain Driven Diagram
 
-![dd](./image/domain.png)
+![dd](./image/domain.jpg)
 
 
 ### ViT-H as the Default SAM Model
@@ -105,9 +105,9 @@ python limexai.py
 
 ### Base Image
 
-![dog](./image/dog.png).
+![dog](./image/dog.jpg).
 
-![hum](./image/hum.png).
+![hum](./image/hum.jpg).
 
 ### Output of Explain any concept
 
