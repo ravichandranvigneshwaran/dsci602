@@ -120,7 +120,18 @@ For the LimeXAI
 ![limeoutput](./image/limeoutput.png).
 
 ## External Code Reference
+
 We utilize code from the following repository to enhance our implementation:
 
 [SAMSHAP Repository](https://github.com/Jerry00917/samshap): Please refer to this repository for additional features or enhancements.
 
+## External Resources
+
+We would like to acknowledge and express our gratitude to the following resources that have greatly contributed to this project:
+
+[Microsoft ResNet-50](https://huggingface.co/microsoft/resnet-50): Utilized for advanced image classification.
+[Tiny ImageNet Dataset](https://huggingface.co/datasets/zh-plus/tiny-imagenet): Used for training and evaluation.
+[Segment Anything Method (SAM)](https://segment-anything.com/): Incorporated into our project for segmentation tasks.
+[LIME (Local Interpretable Model-agnostic Explanations)](https://marcotcr.github.io/lime/): Applied for interpretable model explanations.
+PyTorch](https://pytorch.org/): The deep learning framework underlying our implementation.
+[Hugging Face](https://huggingface.co/): Leveraged for model training and various NLP-related tasks.
