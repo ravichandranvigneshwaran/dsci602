@@ -26,13 +26,13 @@ from skimage.segmentation import mark_boundaries
 from sklearn.linear_model import LinearRegression
 import cv2
 
-def gen_concept_masks(gen_model,target_img):
+def generate_concept_masks(gen_model,target_img):
     return gen_model.generate(target_img)
 
-def samshap(model,img_numpy,image_class,concept_masks,fc,feat_exp,image_norm=None,lr=0.008):
+def calculateShap(model,img_numpy,image_class,concept_masks,fc,feat_exp,image_norm=None,lr=0.008):
     
     
-    feat, probs,losses,net,bin_x_torch = learn_PIE(feat_exp,model,concept_masks,img_numpy,image_class,fc,lr=lr,epochs=100,image_norm=image_norm) ### learning the PIE module 
+    feat, probs,losses,net,bin_x_torch = PIE(feat_exp,model,concept_masks,img_numpy,image_class,fc,lr=lr,epochs=100,image_norm=image_norm) ### learning the PIE module 
     feat_num = len(concept_masks)
     shap_val = []
     mc = 50000
@@ -48,7 +48,7 @@ def samshap(model,img_numpy,image_class,concept_masks,fc,feat_exp,image_norm=Non
         bin_x_tmp = torch.from_numpy(bin_x_tmp).type(torch.float)
         bin_x_tmp_sec = torch.from_numpy(bin_x_tmp_sec).type(torch.float)
 
-        pre_shap = (feat_prob(fc,net.forward_feat(bin_x_tmp.cuda()),image_class) - feat_prob(fc,net.forward_feat(bin_x_tmp_sec.cuda()),image_class)).detach().cpu().numpy()
+        pre_shap = (feature_prob(fc,net.forward_feat(bin_x_tmp.cuda()),image_class) - feature_prob(fc,net.forward_feat(bin_x_tmp_sec.cuda()),image_class)).detach().cpu().numpy()
 
         shap_val.append(pre_shap.sum()/mc)
     ans = shap_val.index(max(shap_val))
@@ -61,7 +61,7 @@ def samshap(model,img_numpy,image_class,concept_masks,fc,feat_exp,image_norm=Non
 
     return auc_mask, shap_list
 
-def feat_prob(model,feat,target_label):
+def feature_prob(model,feat,target_label):
     
     with torch.no_grad():
         if model == None:
@@ -108,7 +108,7 @@ class NeuralNet(nn.Module): ### a simple NN network
         return output.detach().cpu().numpy()
 
 
-def learning_feat(target_model,full_model,concept_mask,target_img,target_label,fc,image_norm=None):
+def learning_feature(target_model,full_model,concept_mask,target_img,target_label,fc,image_norm=None):
     target_img = np.expand_dims(target_img,0)
     concept_mask = np.expand_dims(concept_mask,3)
     masked_image = target_img*concept_mask
@@ -135,7 +135,7 @@ def learning_feat(target_model,full_model,concept_mask,target_img,target_label,f
     return output, fc_res
 
     
-def learn_PIE(target_model,full_model,concept_mask,target_img,target_label,fc,lr,epochs,image_norm=None):
+def PIE(target_model,full_model,concept_mask,target_img,target_label,fc,lr,epochs,image_norm=None):
     masks_tmp = concept_mask.copy()
     
     num_feat = masks_tmp.shape[0]
@@ -143,7 +143,7 @@ def learn_PIE(target_model,full_model,concept_mask,target_img,target_label,fc,lr
     np.fill_diagonal(only_feat,1)
     bin_x = np.random.binomial(1,0.5,size=(2500,num_feat)).astype(bool) #### generate 2500 samples to learn PIE by default
     new_mask = np.array([masks_tmp[i].sum(0) for i in bin_x]).astype(bool)
-    feat, probs = learning_feat(target_model,full_model,new_mask,target_img,target_label,fc,image_norm)
+    feat, probs = learning_feature(target_model,full_model,new_mask,target_img,target_label,fc,image_norm)
     feat = feat.detach().clone().cpu()
     probs = probs.detach().clone().cpu()
     bin_x_torch = torch.tensor(bin_x.tolist(),dtype=torch.float)
@@ -212,11 +212,11 @@ pred_image_class = int(torch.argmax(predict_org))
 # Generate masks using SAM
 for_mask_image = np.array(image_reshape(img))
 input_image_copy = for_mask_image.copy()
-org_masks = gen_concept_masks(mask_generator, input_image_copy)
+org_masks = generate_concept_masks(mask_generator, input_image_copy)
 concept_masks = np.array([i['segmentation'].tolist() for i in org_masks])
 
-# Compute SAMSHAP
-auc_mask, shap_list = samshap(model, input_image_copy, pred_image_class, concept_masks, fc, feat_exp, image_norm=image_norm)
+# Compute calculateShap
+auc_mask, shap_list = calculateShap(model, input_image_copy, pred_image_class, concept_masks, fc, feat_exp, image_norm=image_norm)
 
 # Select the concept patch with the highest shapley value
 final_explain = (for_mask_image * auc_mask[0])
